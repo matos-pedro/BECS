@@ -84,7 +84,7 @@ Vazao Calc/Exp : {round(mp_calc/(mp_ch4+mp_o2+mp_ar),3)}
 
 
 #with col2: 
-st.write("""
+st.write(f"""
 ##### Câmara de Combustão / Reservatório
 Razão de Equiv. :            {round(gas.equivalence_ratio(),2)}\\
 Temperatura (K):   {int(T0)}\\
