@@ -73,7 +73,7 @@ st.title("BECS")
 
 st.write(f"""
 #### Parâmetros de Entrada
-Pressão de Reserv. Medida (Bar):           {round(p0,2)    }\\
+Pressão Medida da Cãmara (Bar):            {round(p0,2)    }\\
 Temperatura Inicial dos Gases (K):         {int(Ti)        }\\
 Vazao mássica de ar (g/s):                 {round(mp_ar,3) }\\
 Vazao mássica de O2 (g/s):                 {round(mp_o2,3) }\\
