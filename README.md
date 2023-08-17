@@ -1,4 +1,4 @@
-# BECS - Calculadora [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://gav-v1.streamlit.app/)
+# BECS - Calculadora [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://becs-app.streamlit.app/)
 
 A calculadora utiliza a suíte Cantera para estimação das condições de estagnação de uma câmara de combustão dados como conhecidas as vazões e temperaturas dos reagentes e a pressão dos produtos. Em seguida, o código estima as condições de saída de bocal acoplado ao combustor dadas as áreas da garganta e da saída do bocal.
 
