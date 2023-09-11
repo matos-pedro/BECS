@@ -68,7 +68,7 @@ mp_calc = 1000*rg*vg*(dA*1e-6)
 
 #Saida
 aux = lambda M: np.abs(RA*M - ((0.5*(g0+1.))**(-0.5*(g0+1.)/(g0-1.)))*(1 + 0.5*(g0-1)*M*M)**(0.5*(g0+1.)/(g0-1.)))
-Ms = fminbound(aux,1,10.0,disp=False)
+Ms = fminbound(aux,1,10,disp=False)
 Ts = gas.T*(1 + 0.5*(g0-1)*Ms**2)**(-1)
 ps = gas.P*(1 + 0.5*(g0-1)*Ms**2)**(-g0/(g0-1))
 rs = gas.density*(1 + 0.5*(g0-1)*Ms**2)**(-1/(g0-1))
@@ -91,8 +91,8 @@ Grau de Combustão:                   {round(eta,2)}  \\
 Razão de Àreas da Tubeira :          {round(RA,3)}
 """)
 
-st.write("""Obs: o grau de combustão, dado por $\eta$, representa a fração de reagentes consumidos pela reação de cobustão; a porção complementar, uma fração de $(1-\eta)$,
-            indica a fração de reagentes não consumidos. Ambas as frações são misutradas à pressão da câmara definida pelo usuário.""")
+st.write("""Obs: um grau de combustão de $\eta$ significa uma mistura contendo $\eta$ moles dos produtos da combustão e $(1-\eta)$ moles de reagentes não consumidos, ambos à pressão definida pelo usuário.
+""")
 
 
 st.write(f""" #### Vazões Calculadas
@@ -115,8 +115,8 @@ Razão de Calores Específicos cp/cv:  {round(gas.cp/gas.cv,3)}
 st.write(f"###### Espécies com X$_i$ $\ge$ 0,001 ")
 Especies = pd.DataFrame()
 Especies['Espécie Química'] = spec
-Especies['Concentração Molar, Xi']   = gas.X
-Especies = Especies[  Especies['Concentração Molar, Xi'] >= 0.001 ]
+Especies['Concentração Molar Xi']   = gas.X
+Especies = Especies[  Especies['Concentração Molar Xi'] >= 0.001 ]
 Especies.set_index(['Espécie Química'],inplace=True)
 
 st.dataframe(Especies,use_container_width=2)
