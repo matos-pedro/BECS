@@ -18,9 +18,9 @@ with st.sidebar:
     mp_ch4 =  st.number_input(label="Vazão de CH4 (g/s):"             , value=20.  ,min_value=0., step=1.)
     Ti     =  st.number_input(label="Temp. inicial dos Reagentes (K):", value=300 ,min_value=0, step=1)    
     
-
     st.write("### Câmara de Combustão")
     p0  =  st.number_input(label="Pressão da Câmara(bar):", value=20.0 , min_value=0.0, step=1.0)
+    eta  =  st.number_input(label="Grau de Combustão:", value=1.0, max_value=1.0 , min_value=0.0, step=0.01)
 
     st.write("### Dimensões da Tubeira")
     dA = st.number_input(label="Área da Garganta (mm2): ", value=128.2, min_value=0.0, step=0.1 )
@@ -36,8 +36,17 @@ n_ch4 = mp_ch4/16
 X = 'N2:'+str(n_n2)+', O2:'+str(n_o2)+', CH4:'+str(n_ch4)
 gas = ct.Solution('gri30.cti')
 
-gas.TPX = Ti, 1e5*p0, X
-gas.equilibrate('HP')
+gas_brnt = ct.Quantity(gas, constant='HP')
+gas_brnt.TPX = Ti, 1e5*p0, X
+gas_brnt.equilibrate('HP')
+
+gas_unbrnt = ct.Quantity(gas, constant='HP')
+gas_unbrnt.TPX = Ti, 1e5*p0, X
+
+gas_brnt.moles   = eta/100.
+gas_unbrnt.moles = 1. - eta/100.
+
+gas = gas_unbrnt + gas_brnt
 h0 = gas.h
 g0 = gas.cp/gas.cv  
 R0 = ct.gas_constant/gas.mean_molecular_weight   
@@ -73,13 +82,18 @@ st.title("BECS")
 
 st.write(f"""
 #### Parâmetros de Entrada
-Pressão Medida da Câmara (Bar):            {round(p0,2)    }\\
-Temperatura Inicial dos Gases (K):         {int(Ti)        }\\
-Vazao mássica de ar (g/s):                 {round(mp_ar,3) }\\
-Vazao mássica de O2 (g/s):                 {round(mp_o2,3) }\\
-Vazao mássica de CH4 (g/s) :               {round(mp_ch4,3)}\\
-Razão de Àreas da Tubeira : {round(RA,3)    }
+Pressão Medida da Câmara (Bar):      {round(p0,2)    }\\
+Temperatura Inicial dos Gases (K):   {int(Ti)        }\\
+Vazao mássica de ar (g/s):           {round(mp_ar,3) }\\
+Vazao mássica de O2 (g/s):           {round(mp_o2,3) }\\
+Vazao mássica de CH4 (g/s) :         {round(mp_ch4,3)}\\
+Grau de Combustão:                   {round(eta,2)}  \\
+Razão de Àreas da Tubeira :          {round(RA,3)}
 """)
+
+st.write("""Obs: um grau de combustão de $\eta$ significa uma mistura contendo $\eta$ moles dos produtos da combustão e $(1-\eta)$ moles de reagentes não consumidos, ambos à pressão definida pelo usuário.
+""")
+
 
 st.write(f""" #### Vazões Calculadas
 Vazao mássica Total Experimental (g/s) : {round(mp_ch4+mp_o2+mp_ar,1)}\\
