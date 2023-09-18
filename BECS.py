@@ -47,6 +47,7 @@ gas_brnt.moles   = eta
 gas_unbrnt.moles = 1. - eta
 
 gas = gas_unbrnt + gas_brnt
+p02 = gas.P
 h0 = gas.h
 g0 = gas.cp/gas.cv  
 R0 = ct.gas_constant/gas.mean_molecular_weight   
@@ -59,8 +60,8 @@ RA = (DA/dA)
 
 #Vazões de Saída         
 M = 1.0
-Tg = gas.T*(1 + 0.5*(g0-1)*M**2)**(-1)
-pg = gas.P*(1 + 0.5*(g0-1)*M**2)**(-g0/(g0-1))
+Tg = T0*(1 + 0.5*(g0-1)*M**2)**(-1)
+pg = p0*(1 + 0.5*(g0-1)*M**2)**(-g0/(g0-1))
 rg = gas.density*(1 + 0.5*(g0-1)*M**2)**(-1/(g0-1))
 gas.TP = Tg,pg
 vg = (2*(h0-gas.h))**0.5
@@ -69,13 +70,14 @@ mp_calc = 1000*rg*vg*(dA*1e-6)
 #Saida
 aux = lambda M: np.abs(RA*M - ((0.5*(g0+1.))**(-0.5*(g0+1.)/(g0-1.)))*(1 + 0.5*(g0-1)*M*M)**(0.5*(g0+1.)/(g0-1.)))
 Ms = fminbound(aux,1,10.0,disp=False)
-Ts = gas.T*(1 + 0.5*(g0-1)*Ms**2)**(-1)
-ps = gas.P*(1 + 0.5*(g0-1)*Ms**2)**(-g0/(g0-1))
-rs = gas.density*(1 + 0.5*(g0-1)*Ms**2)**(-1/(g0-1))
+Ts = T0*(1 + 0.5*(g0-1)*Ms**2)**(-1)
+ps = p0*(1 + 0.5*(g0-1)*Ms**2)**(-g0/(g0-1))
+rs = r0*(1 + 0.5*(g0-1)*Ms**2)**(-1/(g0-1))
 gas.TP = Ts,ps
 hs = gas.h
 vs = (2*(h0-gas.h))**0.5
 
+#print(ps)
 
 ### Visualizacao de Dados --------------------------------------------------------------------------------------------------------------------------------
 st.title("BECS")
@@ -125,7 +127,7 @@ st.dataframe(Especies,use_container_width=2)
 st.write(f"""
 ##### Escoamento Livre
 Temperatura de Saída (K):  {int(Ts)}\\
-Pressão de Saída (Bar):  {round(ps/1e5,3)}\\
+Pressão de Saída (Bar):  {round(ps,3)}\\
 Densidade de Saída (kg/m3):  {round(rs,3)}\\
 Velocidade de Saída (m/s):  {int(vs) }\\
 Mach: {round(Ms,3 )} 
