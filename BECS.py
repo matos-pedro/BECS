@@ -80,7 +80,7 @@ vs = (2*(h0-gas.h))**0.5
 #print(ps)
 
 ### Visualizacao de Dados --------------------------------------------------------------------------------------------------------------------------------
-st.title("BECS")
+st.title("BECS - Equilíbrio a HP")
 
 st.write(f"""
 #### Parâmetros de Entrada
