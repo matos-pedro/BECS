@@ -12,7 +12,6 @@ st.set_page_config(
 with st.sidebar:
     st.write("## Entrada")
 
-
     solver = st.radio(
     "Qual o tipo de equilíbrio?",
     ["HP", "TP"],
@@ -32,6 +31,7 @@ with st.sidebar:
     st.write("### Câmara de Combustão")
     p0  =  st.number_input(label="Pressão da Câmara(bar):", value=20.0 , min_value=0.0, step=1.0)
     eta  =  st.number_input(label="Grau de Combustão:", value=1.0, max_value=1.0 , min_value=0.0, step=0.01, disabled = dis )
+    
 
     st.write("### Dimensões da Tubeira")
     dA = st.number_input(label="Área da Garganta (mm2): ", value=128.2, min_value=0.0, step=0.1 )
@@ -131,7 +131,7 @@ st.write(f"""
 ##### Equilíbrio a HP (solução padrão): 
 Utiliza das entalpias mássicas dos reagentes e da pressão de estagnação registrada para cálculo da estagnação. A vazão estimada para a saída do bocal é, então definida.
 ##### Equilíbrio a TP: 
-Fixa a pressão de estagnação no valor registrado, e estima a temperatura de estagnação que forneça a condição de estagnação que defina uma vazão de saída igual à de entrada.             
+Fixa a pressão de estagnação no valor registrado, e estima a temperatura de estagnação que forneça a condição de estagnação que defina uma vazão de saída igual à de entrada. Neste modo, o grau de combustão é sempre de 100%.             
 """)
 
 
