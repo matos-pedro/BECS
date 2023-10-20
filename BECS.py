@@ -14,8 +14,7 @@ with st.sidebar:
 
     solver = st.radio(
     "Qual o tipo de equilíbrio?",
-    ["HP", "TP"],
-    captions = ["Equilíbrio a H e P0", "Equilíbrio a T e P0"])
+    ["HP", "TP"])
 
    
     dis = True if solver == 'TP' else False
