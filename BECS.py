@@ -5,49 +5,94 @@ import numpy as np
 import pandas as pd
 
 st.set_page_config(
-    page_title="BECS_HP - Calculadora",
+    page_title="BECS - Calculadora",
     layout="wide",
     )
 
 with st.sidebar:
     st.write("## Entrada")
-  
+
+
+    solver = st.radio(
+    "Qual o tipo de equilíbrio?",
+    ["HP", "TP"],
+    captions = ["Equilíbrio a H e P0", "Equilíbrio a T e P0"])
+
+   
+    dis = True if solver == 'TP' else False
+    #else:
+       # dis = False
+
     st.write("### Reagentes")
     mp_ar  =  st.number_input(label="Vazão de ar (g/s):"              , value=210. ,min_value=0., step=1.)
     mp_o2  =  st.number_input(label="Vazão de O2 (g/s):"              , value=40.  ,min_value=0., step=1.)
     mp_ch4 =  st.number_input(label="Vazão de CH4 (g/s):"             , value=20.  ,min_value=0., step=1.)
-    Ti     =  st.number_input(label="Temp. inicial dos Reagentes (K):", value=300 ,min_value=0, step=1)    
+    Ti     =  st.number_input(label="Temp. inicial dos Reagentes (K):", value=300  ,min_value=0 , step=1, disabled = dis )    
     
     st.write("### Câmara de Combustão")
     p0  =  st.number_input(label="Pressão da Câmara(bar):", value=20.0 , min_value=0.0, step=1.0)
-    eta  =  st.number_input(label="Grau de Combustão:", value=1.0, max_value=1.0 , min_value=0.0, step=0.01)
+    eta  =  st.number_input(label="Grau de Combustão:", value=1.0, max_value=1.0 , min_value=0.0, step=0.01, disabled = dis )
 
     st.write("### Dimensões da Tubeira")
     dA = st.number_input(label="Área da Garganta (mm2): ", value=128.2, min_value=0.0, step=0.1 )
     DA = st.number_input(label="Área da Saída (mm2): "   , value=500.0, min_value=0.0, step=0.1 )
-    
+
 
 ## CÀLCULO --------------------------------------------------------------------------------------------------------------------------------
 #Camara de Combustao    
+mp_total = mp_ch4+mp_o2+mp_ar
+
 n_n2  = 0.767*mp_ar/28
 n_o2  = (mp_o2 + 0.233*mp_ar)/32
 n_ch4 = mp_ch4/16
 
-X = 'N2:'+str(n_n2)+', O2:'+str(n_o2)+', CH4:'+str(n_ch4)
-gas = ct.Solution('gri30.cti')
 
-gas_brnt = ct.Quantity(gas, constant='HP')
-gas_brnt.TPX = Ti, 1e5*p0, X
-gas_brnt.equilibrate('HP')
+if (solver == 'TP'): # --------------------------------------------------------------------
+    X = 'N2:'+str(n_n2)+', O2:'+str(n_o2)+', CH4:'+str(n_ch4)
+    gas = ct.Solution('gri30.cti')
+    def acha_T( T0):
+        gas.TPX = T0, 1e5*p0, X
+        gas.equilibrate('TP')
 
-gas_unbrnt = ct.Quantity(gas, constant='HP')
-gas_unbrnt.TPX = Ti, 1e5*p0, X
+        #parametros auxiliar
+        R0 = ct.gas_constant/gas.mean_molecular_weight
+        g0 = gas.cp_mole/gas.cv_mole
+        r0 = gas.density
+        
+        #Vazão de Saída         
+        Tg = T0*(1 + 0.5*(g0-1))**(-1)
+        pg = p0*(1 + 0.5*(g0-1))**(-g0/(g0-1))
+        rg = r0*(1 + 0.5*(g0-1))**(-1/(g0-1))
+        vg = ( g0*R0*T0  )**0.5
 
-gas_brnt.moles   = eta
-gas_unbrnt.moles = 1. - eta
+        mp_calc = 1000*rg*vg*(dA*1e-6)
 
-gas = gas_unbrnt + gas_brnt
-p02 = gas.P
+        return (mp_total - mp_calc)**2
+
+    T0 = fminbound(acha_T,300.0,10000.0,disp=False)
+
+    gas.TPX = T0, 1e5*p0, X
+    gas.equilibrate('TP')   
+
+
+else: # --------------------------------------------------------------------
+    X = 'N2:'+str(n_n2)+', O2:'+str(n_o2)+', CH4:'+str(n_ch4)
+    gas = ct.Solution('gri30.cti')    
+
+    gas_brnt = ct.Quantity(gas, constant='HP')
+    gas_brnt.TPX = Ti, 1e5*p0, X
+    gas_brnt.equilibrate('HP')
+
+    gas_unbrnt = ct.Quantity(gas, constant='HP')
+    gas_unbrnt.TPX = Ti, 1e5*p0, X
+
+    gas_brnt.moles   = eta
+    gas_unbrnt.moles = 1. - eta
+
+    gas = gas_unbrnt + gas_brnt
+
+
+
 h0 = gas.h
 g0 = gas.cp/gas.cv  
 R0 = ct.gas_constant/gas.mean_molecular_weight   
@@ -59,13 +104,13 @@ RA = (DA/dA)
         
 
 #Vazões de Saída         
-M = 1.0
-Tg = T0*(1 + 0.5*(g0-1)*M**2)**(-1)
-pg = p0*(1 + 0.5*(g0-1)*M**2)**(-g0/(g0-1))
-rg = gas.density*(1 + 0.5*(g0-1)*M**2)**(-1/(g0-1))
-gas.TP = Tg,pg
-vg = (2*(h0-gas.h))**0.5
+Tg = T0*(1 + 0.5*(g0-1))**(-1)
+pg = p0*(1 + 0.5*(g0-1))**(-g0/(g0-1))
+rg = r0*(1 + 0.5*(g0-1))**(-1/(g0-1))
+
+vg = ( g0*R0*T0  )**0.5
 mp_calc = 1000*rg*vg*(dA*1e-6)
+
 
 #Saida
 aux = lambda M: np.abs(RA*M - ((0.5*(g0+1.))**(-0.5*(g0+1.)/(g0-1.)))*(1 + 0.5*(g0-1)*M*M)**(0.5*(g0+1.)/(g0-1.)))
@@ -80,7 +125,15 @@ vs = (2*(h0-gas.h))**0.5
 #print(ps)
 
 ### Visualizacao de Dados --------------------------------------------------------------------------------------------------------------------------------
-st.title("BECS - Equilíbrio a HP")
+st.title("BECS - Calculadora")
+
+st.write(f""" 
+##### Equilíbrio a HP (solução padrão): 
+Utiliza das entalpias mássicas dos reagentes e da pressão de estagnação registrada para cálculo da estagnação. A vazão estimada para a saída do bocal é, então definida.
+##### Equilíbrio a TP: 
+Fixa a pressão de estagnação no valor registrado, e estima a temperatura de estagnação que forneça a condição de estagnação que defina uma vazão de saída igual à de entrada.             
+""")
+
 
 st.write(f"""
 #### Parâmetros de Entrada
@@ -132,14 +185,3 @@ Densidade de Saída (kg/m3):  {round(rs,3)}\\
 Velocidade de Saída (m/s):  {int(vs) }\\
 Mach: {round(Ms,3 )} 
 """)
-
-
-
-
-
-
-
-
-
-
-
