@@ -159,8 +159,7 @@ Vazao mássica de ar (g/s):           {round(mp_ar,3) }\\
 Vazao mássica de O2 (g/s):           {round(mp_o2,3) }\\
 Vazao mássica de CH4 (g/s) :         {round(mp_ch4,3)}\\
 Grau de Combustão:                   {round(eta,2)}   \\
-Razão de Áreas da Tubeira :          {round(RA,4)}    \\
-Residuo :                            {round(RES,4)}
+Razão de Áreas da Tubeira :          {round(RA,4)}    
 """)
 
 st.write("""Obs: o grau de combustão, dado por $\eta$, representa a fração de reagentes consumidos pela reação de cobustão; a porção complementar, uma fração de $(1-\eta)$,
@@ -198,9 +197,10 @@ st.dataframe(Especies,use_container_width=2)
 
 st.write(f"""
 ##### Escoamento Livre
-Temperatura de Saída (K):    {int(Ts)}\\
-Pressão de Saída (Bar):      {round(ps/1e5,3)}\\
-Densidade de Saída (kg/m3):  {round(rs,3)}\\
-Velocidade de Saída (m/s):   {int(vs) }\\
-Mach:                        {round(Ms,3 )} 
+Temperatura de Saída (K):      {int(Ts)}        \\
+Pressão de Saída (Bar):        {round(ps/1e5,3)}\\
+Densidade de Saída (kg/m3):    {round(rs,3)}    \\
+Velocidade de Saída (m/s):     {int(vs) }       \\
+Mach:                          {round(Ms,3 )}   \\
+Residuo na determinação de Ms: {round(RES,4)}
 """)
