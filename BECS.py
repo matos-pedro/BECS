@@ -22,13 +22,13 @@ with st.sidebar:
        # dis = False
 
     st.write("### Reagentes")
-    mp_ar  =  st.number_input(label="Vazão de ar (g/s):"              , value=210. ,min_value=0., step=1.)
-    mp_o2  =  st.number_input(label="Vazão de O2 (g/s):"              , value=40.  ,min_value=0., step=1.)
-    mp_ch4 =  st.number_input(label="Vazão de CH4 (g/s):"             , value=20.  ,min_value=0., step=1.)
+    mp_ar  =  st.number_input(label="Vazão de ar (g/s):"              , value=150. ,min_value=0., step=1.)
+    mp_o2  =  st.number_input(label="Vazão de O2 (g/s):"              , value=37.1,min_value=0., step=1.)
+    mp_ch4 =  st.number_input(label="Vazão de CH4 (g/s):"             , value=6.6,min_value=0., step=1.)
     Ti     =  st.number_input(label="Temp. inicial dos Reagentes (K):", value=300  ,min_value=0 , step=1, disabled = dis )    
     
     st.write("### Câmara de Combustão")
-    p0  =  st.number_input(label="Pressão da Câmara(bar):", value=20.0 , min_value=0.0, step=1.0)
+    p0  =  st.number_input(label="Pressão da Câmara(bar):", value=15.0 , min_value=0.0, step=1.0)
     eta  =  st.number_input(label="Grau de Combustão:", value=1.0, max_value=1.0 , min_value=0.0, step=0.01, disabled = dis )
     
 
