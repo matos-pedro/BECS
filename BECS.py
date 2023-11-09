@@ -99,6 +99,7 @@ T0 = gas.T
 r0 = gas.density
 X0 = gas.X
 spec = gas.species_names
+R0  = ct.gas_constant/gas.mean_molecular_weight
 RA = (DA/dA)
         
 
@@ -108,6 +109,7 @@ pg = p0*(1 + 0.5*(g0-1))**(-g0/(g0-1))
 rg = r0*(1 + 0.5*(g0-1))**(-1/(g0-1))
 
 vg = ( g0*R0*T0  )**0.5
+
 mp_calc = 1000*rg*vg*(dA*1e-6)
 
 
@@ -163,7 +165,8 @@ Razão de Equivalência : {round(gas.equivalence_ratio(),2)}\\
 Temperatura Total (K):   {int(T0)}\\
 Pressão Total (Bar):     {round(p0,2)}\\
 Densidade Total (kg/m3): {round(r0,2)}\\
-Razão de Calores Específicos cp/cv:  {round(gas.cp/gas.cv,3)} 
+Razão de Calores Específicos cp/cv:  {round(gas.cp/gas.cv,3)}\\
+Constante Universal dos Gases para a Estagnação:  {round(R0,3)} 
 """)
 
 st.write(f"###### Espécies com X$_i$ $\ge$ 0,001 ")
