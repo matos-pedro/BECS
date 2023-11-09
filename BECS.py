@@ -45,6 +45,7 @@ n_n2  = 0.767*mp_ar/28
 n_o2  = (mp_o2 + 0.233*mp_ar)/32
 n_ch4 = mp_ch4/16
 
+p0 = 1e5*p0 #Convertendo em SI
 
 if (solver == 'TP'): # --------------------------------------------------------------------
     X = 'N2:'+str(n_n2)+', O2:'+str(n_o2)+', CH4:'+str(n_ch4)
@@ -70,7 +71,7 @@ if (solver == 'TP'): # ---------------------------------------------------------
 
     T0 = fminbound(acha_T,300.0,10000.0,disp=False)
 
-    gas.TPX = T0, 1e5*p0, X
+    gas.TPX = T0, p0, X
     gas.equilibrate('TP')   
 
 
@@ -79,11 +80,11 @@ else: # --------------------------------------------------------------------
     gas = ct.Solution('gri30.cti')    
 
     gas_brnt = ct.Quantity(gas, constant='HP')
-    gas_brnt.TPX = Ti, 1e5*p0, X
+    gas_brnt.TPX = Ti, p0, X
     gas_brnt.equilibrate('HP')
 
     gas_unbrnt = ct.Quantity(gas, constant='HP')
-    gas_unbrnt.TPX = Ti, 1e5*p0, X
+    gas_unbrnt.TPX = Ti, p0, X
 
     gas_brnt.moles   = eta
     gas_unbrnt.moles = 1. - eta
@@ -97,32 +98,45 @@ g0 = gas.cp/gas.cv
 R0 = ct.gas_constant/gas.mean_molecular_weight   
 T0 = gas.T
 r0 = gas.density
+s0 = gas.entropy_mass
 X0 = gas.X
 spec = gas.species_names
 R0  = ct.gas_constant/gas.mean_molecular_weight
 RA = (DA/dA)
-        
 
 #Vazões de Saída         
 Tg = T0*(1 + 0.5*(g0-1))**(-1)
 pg = p0*(1 + 0.5*(g0-1))**(-g0/(g0-1))
 rg = r0*(1 + 0.5*(g0-1))**(-1/(g0-1))
 
-vg = ( g0*R0*T0  )**0.5
+
+gas_g = gas
+gas_g.SP = s0,pg
+hg = gas_g.h
+
+vg = ( 2*(h0-hg)  )**0.5
+#vg = ( g0*R0*T0  )**0.5
 
 mp_calc = 1000*rg*vg*(dA*1e-6)
 
 
-#Saida
-aux = lambda M: np.abs(RA*M - ((0.5*(g0+1.))**(-0.5*(g0+1.)/(g0-1.)))*(1 + 0.5*(g0-1)*M*M)**(0.5*(g0+1.)/(g0-1.)))
-Ms = fminbound(aux,1,10.0,disp=False)
+aux = lambda M: (   RA*M - ((0.5*(g0+1.))**(-0.5*(g0+1.)/(g0-1.)))*(1. + 0.5*(g0-1)*M*M)**(0.5*(g0+1.)/(g0-1.))  )**2.0
+Ms = fminbound(aux,1.5,10.0,disp=False)
+
 Ts = T0*(1 + 0.5*(g0-1)*Ms**2)**(-1)
 ps = p0*(1 + 0.5*(g0-1)*Ms**2)**(-g0/(g0-1))
 rs = r0*(1 + 0.5*(g0-1)*Ms**2)**(-1/(g0-1))
-gas.TP = Ts,ps
-hs = gas.h
-vs = Ms*( g0*R0*Ts  )**0.5
+RES = aux(Ms)
 
+
+gas_s = gas
+gas_s.SP = s0,ps
+hs = gas_s.h
+
+vs = ( 2*(h0-hs)  )**0.5
+#vs = Ms*( g0*R0*Ts  )**0.5
+
+mp_tubeira = 1000*rs*vs*(DA*1e-6)
 
 #print(ps)
 
@@ -139,13 +153,14 @@ Fixa a pressão de estagnação no valor registrado, e estima a temperatura de e
 
 st.write(f"""
 #### Parâmetros de Entrada
-Pressão Medida da Câmara (Bar):      {round(p0,2)    }\\
+Pressão Medida da Câmara (Bar):      {round(p0/1e5,2)    }\\
 Temperatura Inicial dos Gases (K):   {int(Ti)        }\\
 Vazao mássica de ar (g/s):           {round(mp_ar,3) }\\
 Vazao mássica de O2 (g/s):           {round(mp_o2,3) }\\
 Vazao mássica de CH4 (g/s) :         {round(mp_ch4,3)}\\
-Grau de Combustão:                   {round(eta,2)}  \\
-Razão de Àreas da Tubeira :          {round(RA,3)}
+Grau de Combustão:                   {round(eta,2)}   \\
+Razão de Áreas da Tubeira :          {round(RA,4)}    \\
+Residuo :                            {round(RES,4)}
 """)
 
 st.write("""Obs: o grau de combustão, dado por $\eta$, representa a fração de reagentes consumidos pela reação de cobustão; a porção complementar, uma fração de $(1-\eta)$,
@@ -153,20 +168,21 @@ st.write("""Obs: o grau de combustão, dado por $\eta$, representa a fração de
 
 
 st.write(f""" #### Vazões Calculadas
-Vazao mássica Total Experimental (g/s) : {round(mp_ch4+mp_o2+mp_ar,1)}\\
-Vazao mássica Total Estimada para o bocal (g/s) :    {round(mp_calc,1)}\\
-Razão entre Vazões Estimada e Experimental : {round(mp_calc/(mp_ch4+mp_o2+mp_ar),3)}
+Vazao mássica Total Experimental (g/s) :                     {round(mp_ch4+mp_o2+mp_ar,1)}\\
+Vazao mássica Total Estimada para o bocal (g/s) :            {round(mp_calc,1)}           \\
+Vazao mássica Total Estimada para a saída do bocal (g/s) :   {round(mp_tubeira,1)}        \\
+Razão entre Vazões Estimada e Experimental :                 {round(mp_calc/(mp_ch4+mp_o2+mp_ar),3)}
 """)
 
 
 #with col2: 
 st.write(f"""
 #### Caracterização da Câmara de Combustão
-Razão de Equivalência : {round(gas.equivalence_ratio(),2)}\\
-Temperatura Total (K):   {int(T0)}\\
-Pressão Total (Bar):     {round(p0,2)}\\
-Densidade Total (kg/m3): {round(r0,2)}\\
-Razão de Calores Específicos cp/cv:  {round(gas.cp/gas.cv,3)}\\
+Razão de Equivalência :                           {round(gas.equivalence_ratio(),2)}\\
+Temperatura Total (K):                            {int(T0)}    \\
+Pressão Total (Bar):                              {round(p0/1e5,2)}\\
+Densidade Total (kg/m3):                          {round(r0,3)}\\
+Razão de Calores Específicos cp/cv:               {round(g0,3)}\\
 Constante Universal dos Gases para a Estagnação:  {round(R0,3)} 
 """)
 
@@ -182,9 +198,9 @@ st.dataframe(Especies,use_container_width=2)
 
 st.write(f"""
 ##### Escoamento Livre
-Temperatura de Saída (K):  {int(Ts)}\\
-Pressão de Saída (Bar):  {round(ps,3)}\\
+Temperatura de Saída (K):    {int(Ts)}\\
+Pressão de Saída (Bar):      {round(ps/1e5,3)}\\
 Densidade de Saída (kg/m3):  {round(rs,3)}\\
-Velocidade de Saída (m/s):  {int(vs) }\\
-Mach: {round(Ms,3 )} 
+Velocidade de Saída (m/s):   {int(vs) }\\
+Mach:                        {round(Ms,3 )} 
 """)
