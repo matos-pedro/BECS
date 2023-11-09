@@ -121,7 +121,7 @@ ps = p0*(1 + 0.5*(g0-1)*Ms**2)**(-g0/(g0-1))
 rs = r0*(1 + 0.5*(g0-1)*Ms**2)**(-1/(g0-1))
 gas.TP = Ts,ps
 hs = gas.h
-vs = ( g0*R0*Ts  )**0.5
+vs = Ms*( g0*R0*Ts  )**0.5
 
 
 #print(ps)
